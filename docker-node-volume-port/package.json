@@ -1,0 +1,11 @@
+{
+  "name": "docker-node-volume-port",
+  "version": "1.0.0",
+  "description": "Express on a non-standard port (5000) with a declared VOLUME — tests port + volume detection",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

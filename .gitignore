@@ -3,3 +3,9 @@ __pycache__/
 .venv/
 vendor/
 .bundle/
+
+.DS_Store
+node_modules/
+target/
+dev.db
+__pycache__/

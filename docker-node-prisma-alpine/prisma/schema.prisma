@@ -1,0 +1,15 @@
+// SQLite so the app needs no external DB — but Prisma still loads its musl
+// query-engine at runtime, which is what requires openssl on Alpine.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Ping {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+}
