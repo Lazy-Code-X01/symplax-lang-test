@@ -3,6 +3,7 @@ export default function Home() {
     <main style={{ fontFamily: 'sans-serif', padding: '2rem', textAlign: 'center' }}>
       <h1>Next.js on Symplax</h1>
       <p>Deployed successfully 🚀</p>
+      <p>Testing autodeployment 🚀</p>
     </main>
   );
 }
