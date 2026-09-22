@@ -1,0 +1,17 @@
+# Deploys, but several keys are not carried over and the preview has to say so
+# rather than silently dropping them. ${DB_PASSWORD} has no value Symplax can
+# resolve, so it is removed rather than passed through as a literal string.
+services:
+  app:
+    build: .
+    ports: ["4000:4000"]
+    command: ["node", "server.js", "--flag"]
+    env_file: .env
+    deploy:
+      replicas: 3
+    environment:
+      NODE_ENV: production
+      SECRET_TOKEN: ${DB_PASSWORD}
+networks:
+  custom:
+    driver: bridge

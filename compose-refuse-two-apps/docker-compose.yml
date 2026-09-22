@@ -1,0 +1,8 @@
+# A split frontend and backend. Same refusal, different shape.
+services:
+  frontend:
+    build: ./web
+    ports: ["80:80"]
+  backend:
+    build: ./api
+    ports: ["3000:3000"]

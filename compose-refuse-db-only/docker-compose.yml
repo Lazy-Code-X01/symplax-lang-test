@@ -1,0 +1,7 @@
+# Databases and nothing to run. Should point at the Databases page rather than
+# claiming the file is malformed.
+services:
+  db:
+    image: mysql:8
+  cache:
+    image: valkey:8

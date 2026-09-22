@@ -1,0 +1,14 @@
+# App plus Postgres plus Redis. Symplax provisions both and rewrites both URLs.
+services:
+  api:
+    build: .
+    ports:
+      - "3000"
+    environment:
+      DATABASE_URL: postgres://appuser:secret@db:5432/appdb
+      REDIS_URL: redis://cache:6379
+      DBADMIN_HOST: dbadmin      # must NOT be mistaken for the "db" service
+  db:
+    image: postgres:16-alpine
+  cache:
+    image: redis:7-alpine

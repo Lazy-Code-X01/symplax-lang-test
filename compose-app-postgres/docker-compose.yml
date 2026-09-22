@@ -1,0 +1,16 @@
+# The shape most compose files actually have: one app, one database, the app
+# addressing the database by its service name.
+services:
+  web:
+    build: .
+    ports:
+      - "8080:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_HOST: db
+      DATABASE_URL: postgres://appuser:secret@db:5432/appdb
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: appdb

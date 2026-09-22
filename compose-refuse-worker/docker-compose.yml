@@ -1,0 +1,12 @@
+# The most common file Symplax cannot take: a web process and a background
+# worker are two things to run, and a deployment is one. Should be refused by
+# name, with the suggestion to deploy the worker as its own app.
+services:
+  web:
+    build: .
+    ports: ["3000:3000"]
+  worker:
+    build: .
+    command: celery -A app worker --loglevel=info
+  db:
+    image: postgres:16
