@@ -1,0 +1,17 @@
+# ClickHouse under the name it actually publishes.
+#
+# The image map only had "clickhouse", but ClickHouse ships as
+# clickhouse/clickhouse-server, so the bare name never matched what people
+# write. That did not fail gracefully: an unrecognised image is treated as an
+# app, so this file was refused as "two apps", naming a service nobody thinks
+# of as one.
+services:
+  app:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      NODE_ENV: production
+      CLICKHOUSE_HOST: analytics
+      CLICKHOUSE_URL: clickhouse://default:secret@analytics:8123/events
+  analytics:
+    image: clickhouse/clickhouse-server:24-alpine

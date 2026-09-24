@@ -1,0 +1,14 @@
+# The app runs a prebuilt image rather than building from this repository.
+#
+# The import path clones and builds. Accepting this would build a Dockerfile the
+# file never asked for and run something other than what compose describes, so
+# it is refused and pointed at the Docker image source, which does exactly this.
+#
+# Note that `build:` alongside `image:` is NOT this case: that is the ordinary
+# build-and-tag pattern and building is correct there. Only image without build.
+services:
+  app:
+    image: ghcr.io/linuxserver/heimdall:latest
+    ports: ["3000:80"]
+  db:
+    image: postgres:16-alpine

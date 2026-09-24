@@ -64,7 +64,11 @@ app comes up quietly missing a worker and that is discovered in production.
 | `compose-refuse-worker`         | web + worker + postgres   | Refused, naming `web, worker`.                                         |
 | `compose-refuse-two-apps`       | frontend + backend        | Refused, naming both.                                                  |
 | `compose-refuse-db-only`        | mysql + valkey            | Refused, pointing at the Databases page.                               |
-| `compose-warn-unsupported-keys` | app                       | Deploys, warns on `command`, `deploy`, `env_file`, networks, `${VAR}`. |
+| `compose-warn-unsupported-keys` | app                       | Deploys. `${VAR}` is dropped rather than passed through literally.     |
+| `compose-split-credentials`     | app + postgres            | Credentials as separate vars. App connects for real, so green = proof. |
+| `compose-clickhouse`            | app + clickhouse          | `clickhouse/clickhouse-server` recognised as a database, not an app.   |
+| `compose-refuse-too-many-dbs`   | app + 5 databases         | Refused on count. Every image is recognised, so it is not a name miss. |
+| `compose-refuse-image-app`      | image-only app + postgres | Refused, pointed at the Docker image source.                           |
 
 Two rewrites worth checking by eye on `compose-app-postgres-redis`:
 
@@ -74,3 +78,20 @@ Two rewrites worth checking by eye on `compose-app-postgres-redis`:
   wrong credentials.
 - `DBADMIN_HOST: dbadmin` must survive untouched. It contains the `db` service
   name as a substring and must not be treated as a reference to it.
+
+## compose-split-credentials is the one that proves something
+
+The others echo what Symplax injected, which shows the values changed but not
+that they work. This one opens a real connection with the five fields separately
+and returns 503 if any of them is wrong, so its health check is the assertion:
+
+    DB_HOST      db          ->  symplax-db-<app>-db-<id>
+    DB_PORT      5432        ->  5432
+    DB_USER      appuser     ->  symplax_<generated>
+    DB_PASSWORD  secret      ->  <generated>
+    DB_NAME      appdb       ->  <generated>
+
+A host-only rewrite leaves the last three describing a container that is never
+created, so the app reaches the right server and is refused by it. That failure
+looks like a crash loop rather than a configuration problem, which is why it is
+worth one real deploy rather than a unit test.

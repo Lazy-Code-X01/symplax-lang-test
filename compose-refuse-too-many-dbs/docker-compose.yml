@@ -1,0 +1,23 @@
+# Five databases, one click.
+#
+# Databases are not plan-limited anywhere in Symplax, because they have always
+# been created one at a time by someone who meant it. An import is the first
+# path where a single action can provision an unbounded number of them, so this
+# is refused rather than quietly putting five database containers on a server.
+#
+# Every service here is recognised, so the refusal must be about the count, not
+# about an unrecognised image being mistaken for a second app.
+services:
+  app:
+    build: .
+    ports: ["3000:3000"]
+  primary:
+    image: postgres:16-alpine
+  cache:
+    image: redis:7-alpine
+  sessions:
+    image: mysql:8
+  documents:
+    image: mongo:7
+  analytics:
+    image: clickhouse/clickhouse-server:24-alpine
