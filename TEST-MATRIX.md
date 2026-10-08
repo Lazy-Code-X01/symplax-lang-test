@@ -95,3 +95,33 @@ A host-only rewrite leaves the last three describing a container that is never
 created, so the app reaches the right server and is refused by it. That failure
 looks like a crash loop rather than a configuration problem, which is why it is
 worth one real deploy rather than a unit test.
+
+## railway-app-postgres — the import, not a deploy
+
+The only folder here that is not deployed from this repo. It is pushed to
+Railway first, used there, and then imported into Symplax, because what it
+tests is the migration rather than the build.
+
+One app, one Postgres: the shape most people arrive with. Full runbook in
+`railway-app-postgres/README.md`.
+
+It never seeds itself. The table is created on boot and rows only ever come
+from `POST /seed`, because an app that seeded on startup would fill the newly
+created Symplax database on first boot and look exactly like one whose data had
+been migrated. Manual seeding is what makes "databases arrive empty" visible
+rather than something taken on trust.
+
+`GET /` answers the two questions that decide whether an import worked:
+
+    db.host    which database this process is actually talking to
+    rowCount   how much is in it
+
+The failure worth catching is an app that imports cleanly and carries on using
+Railway's database. That looks like a success for as long as Railway keeps the
+old database alive and silently loses everything written in between, so after
+an import `db.host` must be a Symplax container name and never
+`*.proxy.rlwy.net`. The fixture says so in words too, via `db.looksLike`.
+
+A pass is: host is not Railway, `rowCount` is 0, `injected` carries
+`DATABASE_URL` and no `RAILWAY_*` at all, a `POST /notes` then shows up, and
+Railway still has its own three rows untouched.
