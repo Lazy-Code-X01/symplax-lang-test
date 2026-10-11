@@ -1,0 +1,10 @@
+{
+  "name": "railway-multi-db",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Railway import fixture: one app, three database engines",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

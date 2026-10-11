@@ -96,6 +96,31 @@ created, so the app reaches the right server and is refused by it. That failure
 looks like a crash loop rather than a configuration problem, which is why it is
 worth one real deploy rather than a unit test.
 
+## The Railway import fixtures
+
+Four folders that are **not** deployed from this repo by Symplax. They are
+pushed to Railway first, used there, and then imported, because what they test
+is the migration rather than the build.
+
+The planner itself has 30 unit tests against a fake Railway
+(`server/tests/railway-plan.test.ts` in the main repo), so these cover only
+what a fake cannot: real Railway responses, real provisioning on a real
+server, and whether the app that comes out the other side actually works.
+
+| Folder | One Railway project with | What only a real run can prove |
+| --- | --- | --- |
+| `railway-app-postgres` | 1 app + Postgres | Data is not copied, writes work afterwards, Railway is left untouched |
+| `railway-multi-db` | 1 app + MySQL + Redis + MongoDB | Every database is repointed independently and created as the right engine |
+| `railway-monorepo` | 2 apps from this repo + 1 Postgres | Two different root directories survive the build; one database with two dependants |
+| `railway-edge-cases` | cron + image service + unreachable Redis + 2nd environment | Every refusal message, against responses Railway actually sends |
+
+Run them in that order. The first is the shape most people arrive with and the
+only one that checks real queries; the rest build on it.
+
+**Cost.** Railway bills per service, so `railway-edge-cases` is built from the
+cheapest things that still produce the branch: the cron service exits
+immediately and nginx idles. Delete each project when its run is done.
+
 ## railway-app-postgres — the import, not a deploy
 
 The only folder here that is not deployed from this repo. It is pushed to

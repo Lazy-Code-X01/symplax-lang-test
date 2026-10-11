@@ -1,0 +1,9 @@
+{
+  "name": "railway-edge-cases-cron",
+  "version": "1.0.0",
+  "private": true,
+  "main": "job.js",
+  "scripts": {
+    "start": "node job.js"
+  }
+}
