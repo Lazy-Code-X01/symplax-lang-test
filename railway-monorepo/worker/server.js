@@ -54,18 +54,35 @@ function describeDatabase() {
 }
 
 /**
- * Which directory the build actually ran in.
+ * Whether the build used this folder as its context.
  *
- * `__dirname` inside the container is the only honest answer. A build that
- * ignored the root directory ends up with the repository root as its working
- * directory, and this is where that shows up.
+ * Not `__dirname`: the builder copies the root directory's CONTENTS to /app, so
+ * a correct build and one that ignored the root directory both report /app.
+ * The first version of this fixture checked that and reported every correct
+ * build as wrong.
+ *
+ * What does distinguish them is what is sitting next to this file. Built from
+ * this folder, that is server.js and package.json and nothing else. Built from
+ * the repository root, it would be every other fixture folder in the repo, so
+ * finding any of them here means the root directory was ignored.
  */
+const SIBLING_FIXTURES = ['django-app', 'railway-multi-db', 'compose-app-only', 'python-flask'];
+
 function buildContext() {
-  const here = __dirname;
+  let entries = [];
+  try {
+    entries = require('fs').readdirSync(__dirname);
+  } catch {
+    return { directory: __dirname, correct: false, reason: 'could not read the build directory' };
+  }
+  const strays = entries.filter((e) => SIBLING_FIXTURES.includes(e));
   return {
-    directory: here,
-    expectedToEndWith: EXPECTED_DIR,
-    correct: here.replace(/\\/g, '/').endsWith(EXPECTED_DIR),
+    directory: __dirname,
+    sourceFolder: EXPECTED_DIR,
+    contents: entries.filter((e) => e !== 'node_modules').sort(),
+    // Proof by absence: none of the repository's other folders came along.
+    correct: strays.length === 0 && entries.includes('server.js'),
+    strays,
   };
 }
 

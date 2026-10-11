@@ -10,12 +10,19 @@ reports that the language could not be detected. That bug was real and shipped.
 One service getting it right is luck; two services at two different depths is
 the test.
 
-`GET /` returns the directory the process is actually running from, so a build
-that silently ran at the repository root is visible rather than merely broken:
+`GET /` lists what the build context actually contained, so a build that
+silently ran at the repository root is visible rather than merely broken:
 
 ```json
-"build": { "directory": "/app/railway-monorepo/web", "correct": true }
+"build": { "contents": ["package.json", "server.js"], "correct": true, "strays": [] }
 ```
+
+It checks the contents and not `__dirname`, because the builder copies the root
+directory's **contents** to `/app`: a correct build and one that ignored the
+root directory both report `/app`. The first version of this fixture checked
+`__dirname` and called every correct build wrong. What does distinguish them is
+what came along: this folder's two files, or the repository's other fixture
+folders.
 
 **A database more than one app depends on.** Both services read the same
 Postgres, so the import has to repoint two references at one newly created
@@ -41,10 +48,15 @@ Both apps:
 
 ```
 ok: true
-build.correct: true          // and the two directories differ
+build.correct: true          // and build.strays is empty
+role: "web" on one, "worker" on the other   // the two folders really did build separately
 db.looksLike: "not Railway"
 db.host: the same Symplax container for both
 ```
+
+`role` is the other half of the proof: it is a constant in each folder's own
+`server.js`, so one app reporting `web` and the other `worker` means the two
+builds used two different contexts.
 
 Two apps and one database in Symplax, both apps pointing at that one database.
 
