@@ -1,0 +1,7 @@
+{
+  "name": "do-fixture-job",
+  "version": "1.0.0",
+  "private": true,
+  "main": "job.js",
+  "scripts": { "start": "node job.js" }
+}

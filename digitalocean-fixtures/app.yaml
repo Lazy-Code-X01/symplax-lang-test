@@ -1,0 +1,122 @@
+# The whole fixture as one App Platform spec.
+#
+# App Platform can create an app from a spec instead of a dozen dashboard
+# steps, which is why this exists: DigitalOcean → Apps → Create App → and
+# either point it at this repo (it will offer to read a spec) or paste this
+# under "Edit your App Spec".
+#
+# Every component here is a different branch of the importer:
+#
+#   web          a service from GitHub, with a GENERAL, a BUILD_TIME and a
+#                SECRET variable, plus a database binding.  Imports.
+#   queue        a worker, which has no port and must not be health-checked.
+#                Imports, portless.
+#   nightly      a SCHEDULED job.  Skipped, schedule named.
+#   docs         a static site.  Skipped, no server to move.
+#   db           a dev database.  Created empty, no data carried.
+#   ingress      two components under one hostname by path, which is the one
+#                shape that cannot survive being split into separate apps.
+#
+# Cost: App Platform bills hourly, so running this for an afternoon is pennies
+# rather than a month's subscription. Destroy the app when the run is done.
+
+name: symplax-do-fixture
+region: lon
+
+services:
+  - name: web
+    github:
+      repo: Lazy-Code-X01/symplax-lang-test
+      branch: main
+      # Off deliberately. A push to this repo rebuilds the Railway fixtures
+      # too, and nothing here needs redeploying on every commit.
+      deploy_on_push: false
+    source_dir: digitalocean-fixtures/web
+    http_port: 8080
+    instance_count: 1
+    # If DigitalOcean rejects this slug, pick the cheapest Basic size in the
+    # UI instead. The names change and this one is not verified.
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    health_check:
+      http_path: /health
+    envs:
+      # Readable. Should arrive with this exact value.
+      - key: GREETING
+        scope: RUN_TIME
+        type: GENERAL
+        value: hello-from-digitalocean
+      # Readable, and flagged build-time, which is what Symplax passes to
+      # `docker build` rather than to the container.
+      - key: BUILD_FLAG
+        scope: BUILD_TIME
+        type: GENERAL
+        value: built-on-digitalocean
+      # The important one. DigitalOcean encrypts this on first submission and
+      # will never hand the value back, so the import must ASK for it and must
+      # never carry the EV[1:...] ciphertext across.
+      - key: API_SECRET
+        scope: RUN_TIME
+        type: SECRET
+        value: pretend-this-is-a-stripe-key
+      # A binding, DigitalOcean's equivalent of Railway's ${{Postgres.URL}}.
+      # Single braces, and it must end up pointing at the Symplax database.
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: GENERAL
+        value: ${db.DATABASE_URL}
+
+workers:
+  - name: queue
+    github:
+      repo: Lazy-Code-X01/symplax-lang-test
+      branch: main
+      deploy_on_push: false
+    source_dir: digitalocean-fixtures/worker
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+
+jobs:
+  - name: nightly
+    kind: SCHEDULED
+    schedule:
+      cron: "0 3 * * *"
+      time_zone: Europe/London
+    github:
+      repo: Lazy-Code-X01/symplax-lang-test
+      branch: main
+      deploy_on_push: false
+    source_dir: digitalocean-fixtures/job
+    instance_size_slug: apps-s-1vcpu-0.5gb
+
+static_sites:
+  - name: docs
+    github:
+      repo: Lazy-Code-X01/symplax-lang-test
+      branch: main
+      deploy_on_push: false
+    source_dir: digitalocean-fixtures/site
+    index_document: index.html
+
+databases:
+  - name: db
+    engine: PG
+    # A dev database rather than a managed cluster: far cheaper, and it is the
+    # branch with the open question, since a dev database has no cluster id
+    # anywhere in the app spec and so no discoverable credentials.
+    production: false
+
+# Two components served from one hostname by path. Symplax gives every app its
+# own domain, so this is the one thing an import cannot preserve, and the plan
+# has to say so rather than let it be discovered later.
+ingress:
+  rules:
+    - match:
+        path:
+          prefix: /api
+      component:
+        name: web
+    - match:
+        path:
+          prefix: /
+      component:
+        name: docs
