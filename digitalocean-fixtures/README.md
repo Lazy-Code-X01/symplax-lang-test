@@ -28,11 +28,15 @@ worse than a crash.
 App Platform can build an app from a spec, which is one paste instead of a
 dozen dashboard steps.
 
-1. DigitalOcean → **Apps → Create App**
-2. Either point it at this repo and let it offer the spec, or choose
-   **Edit your App Spec** and paste [`app.yaml`](./app.yaml)
-3. It will ask for a value for `API_SECRET`, because that is what a secret is
-4. Deploy
+The spec lives at [`.do/app.yaml`](../.do/app.yaml), at the repository root,
+because that is the only path App Platform looks for. Put it anywhere else and
+the repo picker ignores it.
+
+1. DigitalOcean → **Apps → Create App → GitHub**
+2. Pick `Lazy-Code-X01/symplax-lang-test`, branch `main`
+3. It reads `.do/app.yaml` and offers all six components at once
+4. It will ask for a value for `API_SECRET`, because that is what a secret is
+5. Deploy
 
 **Cost.** App Platform bills hourly, so running this for an afternoon is
 pennies, not a month's subscription. Destroy the app when the run is done.
