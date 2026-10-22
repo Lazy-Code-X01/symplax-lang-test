@@ -21,6 +21,7 @@ Two paths are being tested:
 | `docker-php-apache`         | `php:8.2-apache`               | **80**   | Single-stage, port 80 detection.                                                                   |
 | `docker-static-nginx`       | `nginx:alpine`                 | **80**   | Static site via nginx — very common real-world Dockerfile.                                         |
 | `node-release-test`         | Node (existing)                | —        | Existing Dockerfile app (release-command flow).                                                    |
+| `release-command-order`     | Node on `node:alpine`          | 3000     | **Release command runs first.** The app exits on boot until `node migrate.js` has run, so it only deploys if the release command runs before the new version starts. Set the release command to `node migrate.js`; `FAIL_RELEASE=1` must abort the deploy and keep the old version live. |
 
 ## Auto-detect (no Dockerfile)
 
